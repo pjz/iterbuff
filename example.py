@@ -3,19 +3,19 @@ import asyncio
 
 from iterbuff import bufferable, fbufferable
 
-#@bufferable(1)
+@bufferable(1)
 async def gen_1():
     for value in range(0, 10):
         await asyncio.sleep(1)  # Could be a slow HTTP request
         yield value
 
-#@bufferable(1)
+@bufferable(1)
 async def gen_2(it):
     async for value in it:
         await asyncio.sleep(1)  # Could be a slow HTTP request
         yield value * 2
 
-#@bufferable(1)
+@bufferable(1)
 async def gen_3(it):
     async for value in it:
         await asyncio.sleep(1)  # Could be a slow HTTP request

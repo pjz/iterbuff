@@ -28,10 +28,12 @@ class bufferable:
         async def wrapped(*a, **kw):
             # set up the queue here so it's in the same run-loop as the task
             self.q = asyncio.Queue(maxsize=self.maxsize)
+            self.not_full = asyncio.Event()
             task = asyncio.create_task(self._producer(decorated(*a, **kw)))
             try:
                 while True:
                     item = await self.q.get()
+                    self.not_full.set()
                     if item == EOQ:
                         return
                     if isinstance(item, BufferedException):
@@ -56,6 +58,9 @@ class bufferable:
         try:
             async for item in coro_iter:
                 await self.q.put(item)
+                if self.q.full():
+                    self.not_full.clear()
+                    await self.not_full.wait()
         except BaseException as e:
             await self.q.put(BufferedException(e))
         else:
